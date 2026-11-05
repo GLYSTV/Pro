@@ -1,0 +1,9 @@
+# Proxy HTTPS automático para GLYSTV-PRO.
+# DOMAIN se toma del archivo .env (docker compose). Con "localhost" usa un certificado local.
+{$DOMAIN:localhost} {
+	encode zstd gzip
+	reverse_proxy app:3000 {
+		# Entregar el vídeo del proxy/grabaciones sin almacenar en búfer
+		flush_interval -1
+	}
+}
