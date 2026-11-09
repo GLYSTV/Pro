@@ -1,7 +1,23 @@
 {
-  "appId": "com.glystv.app",
+  "appId": "com.glystv.pro",
   "appName": "GLYSTV PRO",
   "webDir": "www",
-  "server": { "androidScheme": "https", "cleartext": true },
-  "plugins": { "CapacitorHttp": { "enabled": true } }
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "ios": {
+    "contentInset": "always",
+    "limitsNavigationsToAppBoundDomains": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "backgroundColor": "#030A14",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    }
+  }
 }
