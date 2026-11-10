@@ -105,7 +105,7 @@ public class MainActivity extends BridgeActivity {
 JAVA
 sed -i "s/__APP_ID__/$APP_ID/" "$PKG_PATH/MainActivity.java"
 
-# Extraer plugins del build.sh viejo si existen (por si no están en java/)
+# Extraer plugins del build.sh viejo si existen
 for J in PlayerActivity NativePlayerPlugin RemoteSetupPlugin; do
   if [ -f "java/$J.java" ]; then
     sed "s/package com.glystv.app;/package $APP_ID;/" "java/$J.java" > "$PKG_PATH/$J.java"
@@ -221,9 +221,9 @@ print('banner ok')
 BANNERPY
 fi
 
-# ---------- 12) Gradle ----------
+# ---------- 12) Gradle (Corregido sin BOM) ----------
 log "Parcheando build.gradle..."
-sed -i '/^dependencies {/a\    implementation platform("androidx.media3:media3-bom:1.4.1")\n    implementation "androidx.media3:media3-exoplayer"\n    implementation "androidx.media3:media3-exoplayer-hls"\n    implementation "androidx.media3:media3-exoplayer-dash"\n    implementation "androidx.media3:media3-exoplayer-smoothstreaming"\n    implementation "androidx.media3:media3-exoplayer-rtsp"\n    implementation "androidx.media3:media3-ui"\n    implementation "org.jellyfin.media3:media3-ffmpeg-decoder:1.4.1+1"' "$GRADLE"
+sed -i '/^dependencies {/a\    implementation "androidx.media3:media3-exoplayer:1.4.1"\n    implementation "androidx.media3:media3-exoplayer-hls:1.4.1"\n    implementation "androidx.media3:media3-exoplayer-dash:1.4.1"\n    implementation "androidx.media3:media3-exoplayer-smoothstreaming:1.4.1"\n    implementation "androidx.media3:media3-exoplayer-rtsp:1.4.1"\n    implementation "androidx.media3:media3-ui:1.4.1"\n    implementation "org.jellyfin.media3:media3-ffmpeg-decoder:1.4.1+1"' "$GRADLE"
 
 if [ -f proguard-rules.pro ]; then
   cp proguard-rules.pro android/app/proguard-rules.pro
