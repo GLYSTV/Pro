@@ -1,0 +1,22 @@
+GLYSTV PRO — MEJORAS DE ESTABILIDAD
+
+Cambios en esta revisión:
+- El analizador M3U ahora procesa línea por línea para reducir memoria temporal al cargar listas grandes.
+- Compatibilidad mejorada con BOM, nombres que contienen comas, tvg-name, tvg-id, tvg-logo, group-title y #EXTGRP.
+- Se descartan entradas M3U sin URL HTTP/HTTPS válida.
+- Validación más estricta de direcciones de servidor y listas.
+- Las cargas y actualizaciones M3U usan el helper con tiempo máximo de espera; ya no quedan peticiones de actualización sin timeout.
+- Se evita iniciar varias actualizaciones simultáneas.
+- Los errores de carga y actualización muestran más información útil.
+- Se conserva el diseño y la funcionalidad previa de GLYSTV PRO.
+
+Pruebas realizadas:
+- Sintaxis JavaScript (node --check): correcta.
+- Sintaxis del script de compilación Bash: correcta.
+- Sintaxis de patch_tv.py: correcta.
+- Prueba M3U con BOM, atributos, EXTGRP, nombres con comas y URL inválida: correcta.
+- Prueba de carga de 40.000 entradas M3U: correcta.
+- Validación de URL http/https y host:puerto: correcta.
+
+Nota de compilación:
+Este paquete contiene el proyecto fuente actualizado. No incluye un APK nuevo; para generar la APK hay que ejecutar build-glystv-v3.sh en un entorno con Node.js, Java, Android SDK y conexión a Internet.
