@@ -1,45 +1,41 @@
-name: Build GLYSTV PRO APK
+name: Build GLYSTV PRO
 
 on:
-  push:
-    branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  android:
+    name: Build APK GLYSTV PRO
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout código
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configurar Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
 
-      - name: Configurar Java 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
 
-      - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Install dependencies
+        run: npm install
 
-      - name: Instalar dependencias
-        run: |
-          npm install
-          npx cap add android || true
+      - name: Build Android
+        run: bash build-glystv-v3.sh
 
-      - name: Dar permisos al script
-        run: chmod +x build-glystv-v3.sh
-
-      - name: Ejecutar compilación
-        run: ./build-glystv-v3.sh
-
-      - name: Subir APK como artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload APK
+        uses: softprops/action-gh-release@v2
         with:
-          name: GLYSTV-PRO-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 30
+          tag_name: pro-apk-${{ github.run_number }}
+          name: GLYSTV PRO APK ${{ github.run_number }}
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+          
