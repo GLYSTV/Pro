@@ -1,5 +1,5 @@
 
-name: GLYSTV PRO - Compilar APK
+name: GLYSTV PRO
 
 on:
   workflow_dispatch:
