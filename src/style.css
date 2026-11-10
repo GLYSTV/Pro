@@ -1,1 +1,48 @@
+/* --- GLYSTV PRO - Estilos Profesionales para TV --- */
+:root {
+  --neon-blue: #1687ff;
+  --neon-glow: rgba(22, 135, 255, 0.6);
+  --bg-dark: #030a14;
+  --text-light: #ffffff;
+}
 
+body {
+  margin: 0;
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  font-family: 'Poppins', 'Open Sans', sans-serif;
+  font-size: 1.2rem; /* Tamaño base legible en TV */
+  overflow-x: hidden;
+}
+
+/* Estado de foco profesional para navegación con mando (DPAD) */
+.focusable {
+  transition: all 0.2s ease-out;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.focusable:focus, .focusable.focused {
+  transform: scale(1.05);
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 15px var(--neon-glow), 0 0 30px rgba(22, 135, 255, 0.3);
+  z-index: 100;
+  outline: none;
+  background-color: rgba(22, 135, 255, 0.1);
+}
+
+/* Scroll suave automático cuando el foco llega al borde */
+.focusable:focus {
+  scroll-margin: 20px;
+}
+
+/* Ocultar scrollbar pero mantener funcionalidad */
+::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--neon-blue);
+  border-radius: 4px;
+}
