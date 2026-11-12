@@ -20,3 +20,10 @@ Pruebas realizadas:
 
 Nota de compilación:
 Este paquete contiene el proyecto fuente actualizado. No incluye un APK nuevo; para generar la APK hay que ejecutar build-glystv-v3.sh en un entorno con Node.js, Java, Android SDK y conexión a Internet.
+
+
+Actualización visual — paleta unificada para ExoPlayer/Media3:
+- Se alineó el color de acento del reproductor nativo con el tema violeta/cinema de index.html (#7028F5).
+- Se actualizaron los estados de enfoque, botones, barra de progreso, EPG y menús del reproductor para usar tonos violeta coordinados.
+- Se conservaron los colores semánticos (por ejemplo, EN VIVO y mensajes de estado) y el fondo negro de vídeo.
+- El proyecto genera el código Android/ExoPlayer desde build-glystv-v3.sh durante la compilación.
