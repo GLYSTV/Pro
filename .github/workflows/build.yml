@@ -32,8 +32,12 @@ jobs:
 
       - name: Instalar Android SDK 36
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+          SDKM="$(command -v sdkmanager || true)"
+          if [ -z "$SDKM" ]; then SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"; fi
+          if [ ! -x "$SDKM" ]; then SDKM="$(find "$ANDROID_HOME" "$ANDROID_SDK_ROOT" /usr/local/lib/android -name sdkmanager -type f 2>/dev/null | head -1)"; fi
+          echo "Usando sdkmanager en: $SDKM"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-36" "build-tools;36.0.0"
 
       - name: Instalar Python
         uses: actions/setup-python@v5
