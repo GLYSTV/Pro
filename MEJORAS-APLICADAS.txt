@@ -27,3 +27,13 @@ Actualización visual — paleta unificada para ExoPlayer/Media3:
 - Se actualizaron los estados de enfoque, botones, barra de progreso, EPG y menús del reproductor para usar tonos violeta coordinados.
 - Se conservaron los colores semánticos (por ejemplo, EN VIVO y mensajes de estado) y el fondo negro de vídeo.
 - El proyecto genera el código Android/ExoPlayer desde build-glystv-v3.sh durante la compilación.
+
+
+Reproductores de respaldo VLC y MPV (cadena de reproducción):
+- ExoPlayer (Media3) sigue siendo el reproductor principal; el contenido que ya funciona no cambia.
+- Si ExoPlayer agota sus reintentos (salvo HTTP 404), se abre AltPlayerActivity: primero VLC (LibVLC 3.7.6) y, si también falla, MPV (libmpv 1.0.0).
+- También se puede elegir a mano en Opciones del reproductor: "Reproducir con VLC" / "Reproducir con MPV".
+- Las librerías se llaman por reflexión: si alguna no está en la APK, ese reproductor se omite sin romper la app.
+- minSdk sube a 26 (Android 8.0+, por libmpv). La APK se limita a arm64-v8a y armeabi-v7a.
+- Si la compilación falla con VLC/MPV, el script reintenta sin ellos (queda solo ExoPlayer).
+- Controles en VLC/MPV: OK pausa, izquierda/derecha ±10 s, arriba audio, abajo subtítulos, MENÚ aspecto.
