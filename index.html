@@ -616,6 +616,46 @@ body{background:radial-gradient(900px 520px at 80% -10%,rgba(22,135,255,.16),tra
  #br.vm .brb{grid-template-columns:150px minmax(0,1fr)!important}
 }
 </style>
+<style>
+/* YERAL-Pro: interior premium streaming mix (Netflix / Disney / XuperTV / FlujoTV) */
+:root{--s:#05040b;--s2:#0b0914;--s3:#151022;--s4:#302046;--b:#792eff;--b2:#bd67ff;--t:#f8f5ff;--m:#b7a8d1}
+body{background:radial-gradient(900px 520px at 14% -12%,rgba(121,46,255,.24),transparent 62%),radial-gradient(800px 460px at 100% 100%,rgba(189,103,255,.12),transparent 62%),var(--s)}
+.logo{background:linear-gradient(90deg,#a65bff,#f0d7ff);-webkit-background-clip:text;background-clip:text}
+#br{background:radial-gradient(950px 500px at 0% 0%,rgba(121,46,255,.16),transparent 65%),var(--s)}
+#br .brtop{background:linear-gradient(180deg,#090611,#090611bb);border-bottom:1px solid #b76cff22}
+#br .brtop .ib{background:#ffffff0c;border:1px solid #b76cff28;color:#eee5ff;border-radius:14px}
+#br .brtop .ib:hover,#br .brtop .ib:focus,#bSea.act{background:linear-gradient(135deg,#7026ed,#b64cff);box-shadow:0 0 18px #8c35ff55}
+#br .brtop #bSea{display:flex!important}
+#cc,#ls{background:linear-gradient(180deg,#100c1c,#090711);border:1px solid #a855f733;border-radius:18px}
+#cc{padding:9px}
+.cth{color:#d4b5ff;text-transform:uppercase;letter-spacing:1.2px;padding:8px 10px 12px}
+.cat{border:1px solid transparent;background:#ffffff05;margin:4px 0;transition:background .18s,border .18s,transform .18s}
+.cat:hover{background:#ffffff0c;transform:translateX(2px)}
+.cat.on{background:linear-gradient(110deg,#6c24e9,#a54bff);border-color:#d4aaff55;box-shadow:0 6px 18px #7626e933;color:#fff}
+.cat.allch{background:linear-gradient(110deg,#221438,#160d27);border:1px solid #9e55ff66;color:#f2e5ff}
+.cat.allch small{color:#d0a4ff}
+#ls.grid{background:transparent;gap:13px;padding:12px}
+#ls.grid .ch{border:1px solid #ffffff12;border-radius:14px;overflow:hidden;background:#100d19!important;box-shadow:0 8px 24px #0005;transition:transform .2s,border-color .2s}
+#ls.grid .ch:hover,#ls.grid .ch:focus{transform:translateY(-3px);border-color:#a65bff;outline:2px solid #a65bff55}
+#ls.grid .ch img,#ls.grid .ch .ph{border-radius:0;background:#1b1427}
+#ls.grid .ch .nm{padding:7px 9px 10px;color:#f4edff}
+#ls.grid .ch .fv{background:#0b0614dd;border:1px solid #b76cff33}
+#ls.grid .ch.on{outline:2px solid #b15cff}
+#ls:not(.grid) .ch{border-bottom:1px solid #ffffff0b;padding:11px 10px;border-radius:12px;background:#ffffff04;transition:background .15s}
+#ls:not(.grid) .ch:hover,#ls:not(.grid) .ch:focus,#ls:not(.grid) .ch.on{background:#792eff22;outline:1px solid #a85cff66}
+#ls:not(.grid) .ch .nm{color:#f7f1ff}
+#se.on{position:fixed;top:75px;left:50%;width:min(620px,92vw);border-radius:16px;background:#100b1c;border:1px solid #a855ff80;color:#f7f1ff;padding:14px 16px;box-shadow:0 18px 45px #000a,0 0 24px #7c2bff22;z-index:80}
+#fastFilters select{background:#100b1c;border-color:#58387a;color:#f2eaff}
+#fastMeta{color:#c8aaff}
+#rt{background:linear-gradient(145deg,#170d26,#0b0711);border:1px solid #a855ff33;box-shadow:0 12px 30px #0006;border-radius:18px}
+#inf{background:linear-gradient(135deg,#241339,#130b22);border:1px solid #a855ff33}
+.tile[data-h=live]{background:linear-gradient(135deg,#6d28e9,#a94cff)}
+.tile[data-h=vod]{background:linear-gradient(135deg,#38205d,#8e40f7)}
+.tile[data-h=series]{background:linear-gradient(135deg,#24143d,#7134ca)}
+.tile[data-h=fav]{background:linear-gradient(135deg,#49276e,#aa54ed)}
+.tile[data-h=pl]{background:linear-gradient(135deg,#2c1a48,#7432b9)}
+@media(max-width:849px){#br .brtop{gap:7px;padding:10px}#br .brtop .ib{width:42px;height:42px;min-width:42px;border-radius:13px}#cc,#ls{border-radius:15px}}
+</style>
 </head>
 <body>
 <div id="intro" aria-hidden="true"><div class="ic"><div class="it">GLYS<b>TV</b><em>PRO</em></div><div class="is">IPTV Player</div><div class="ib2"><i></i></div></div></div>
@@ -879,7 +919,7 @@ setInterval(clock,5000);function clock(){var d=new Date();Array.prototype.forEac
 async function openBr(mode,start,nopush){
 S.mode=mode;S.cat='';S.q='';S.lim=1e9;S.items=[];S.ep=false;$('se').value='';['ffGenre','ffYear','ffLang','ffCat'].forEach(function(id){if($(id))$(id).value=''});go('br');
 if(!nopush)try{history.pushState({br:1},'')}catch(e){}
-$('brt').textContent={live:'TV en vivo',vod:'Películas',series:'Series'}[mode];
+$('brt').textContent={live:'TV en vivo',vod:'Películas',series:'Series'}[mode];$('se').placeholder=mode==='live'?'🔎 Buscar canal…':mode==='vod'?'🔎 Buscar película…':'🔎 Buscar serie…';$('bSea').title='Buscar en '+(mode==='live'?'TV en vivo':mode==='vod'?'Películas':'Series');$('bSea').setAttribute('aria-label',$('bSea').title);
 var sp=(mode=='live'?[]:[{id:'__cw',name:'CONTINUAR VIENDO'}]).concat([{id:'__rec',name:'Visto recientemente'},{id:'__fav',name:'TODOS LOS FAVORITOS'},{id:'__fav_live',name:'FAVORITOS · TV'},{id:'__fav_vod',name:'FAVORITOS · PELÍCULAS'},{id:'__fav_series',name:'FAVORITOS · SERIES'}]),spl=sp;
 try{
 if(mode=='live'){var g={};S.chs.forEach(function(c){g[c.group]=(g[c.group]||0)+1});S.cats=mkCats('live',Object.keys(g).sort().map(function(k){return{id:k,name:k,n:g[k]}}),sp.concat([{id:'',name:'TODOS LOS CANALES',n:S.chs.length}]))}
