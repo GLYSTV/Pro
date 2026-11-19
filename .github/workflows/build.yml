@@ -54,13 +54,19 @@ jobs:
         env:
           KS_B64: ${{ secrets.YERAL_KEYSTORE_B64 }}
         run: |
-          mkdir -p ~/.android
-          if [ -n "$KS_B64" ]; then
-            echo "$KS_B64" | base64 -d > ~/.android/debug.keystore
-            echo "Firma fija restaurada."
-          else
-            echo "::warning::Falta el secreto YERAL_KEYSTORE_B64: cada compilación se firmará con una clave distinta y Android no permitirá actualizar encima."
+          if [ -z "$KS_B64" ]; then
+            echo "::error::Falta el secreto YERAL_KEYSTORE_B64. Sin él cada APK queda con otra firma y Android no deja actualizar. Crea el secreto y vuelve a ejecutar."
+            exit 1
           fi
+          # Quita espacios, saltos de línea y restos del prompt de Termux (~ $) por si se pegaron.
+          printf '%s' "$KS_B64" | tr -d ' \r\n~$' | base64 -d > "$RUNNER_TEMP/yeral.keystore"
+          keytool -list -v -keystore "$RUNNER_TEMP/yeral.keystore" -storepass android -alias androiddebugkey > "$RUNNER_TEMP/ks.txt" \
+            || { echo "::error::No se pudo leer la clave. El secreto está incompleto o dañado: vuelve a generarlo con base64 -w0."; exit 1; }
+          KS_FP=$(grep 'SHA256:' "$RUNNER_TEMP/ks.txt" | head -1 | sed 's/.*SHA256: *//' | tr -d ':' | tr 'A-F' 'a-f')
+          echo "Huella SHA-256 de la clave fija: $KS_FP"
+          echo "KS_FP=$KS_FP" >> "$GITHUB_ENV"
+          echo "YERAL_KEYSTORE=$RUNNER_TEMP/yeral.keystore" >> "$GITHUB_ENV"
+          mkdir -p ~/.android && cp "$RUNNER_TEMP/yeral.keystore" ~/.android/debug.keystore
 
       - name: Compilar YERAL-PRO
         env:
@@ -70,6 +76,18 @@ jobs:
       - name: Renombrar APK
         run: |
           cp android/app/build/outputs/apk/debug/app-debug.apk YERAL-PRO.apk
+
+      - name: Verificar que la APK lleva la firma fija
+        run: |
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          APK_FP=$("$APKSIGNER" verify --print-certs YERAL-PRO.apk | grep -i 'certificate SHA-256 digest' | head -1 | awk '{print $NF}' | tr 'A-F' 'a-f')
+          echo "Huella de la clave fija : $KS_FP"
+          echo "Huella firmada en la APK: $APK_FP"
+          if [ "$APK_FP" != "$KS_FP" ]; then
+            echo "::error::La APK NO está firmada con la clave fija. No se publica."
+            exit 1
+          fi
+          echo "OK: la APK usa la firma fija."
 
       - name: Guardar registro de errores
         if: failure()
@@ -95,7 +113,4 @@ jobs:
           name: YERAL-PRO ${{ github.run_number }}
           files: YERAL-PRO.apk
           make_latest: true
-
-
-
           
