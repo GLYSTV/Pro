@@ -5,6 +5,12 @@ set -euo pipefail
 rm -rf www android
 mkdir www
 cp index.html www/
+# Versión real = número de la build (run_number de GitHub). Así la app instalada sabe qué versión es y deja de pedir actualizar.
+if [ -n "${BUILD_NUMBER:-}" ]; then
+  VLABEL="v1.$(printf '%02d' $((BUILD_NUMBER-100))) · build ${BUILD_NUMBER}"
+  sed -i -E "s/var YERAL_CURRENT_VERSION=[0-9]+;/var YERAL_CURRENT_VERSION=${BUILD_NUMBER};/; s/var YERAL_VERSION_LABEL='[^']*';/var YERAL_VERSION_LABEL='${VLABEL}';/; s#(id=\"yuInstalledVersion\">)[^<]*#\\1${VLABEL}#" www/index.html
+  grep -n "YERAL_CURRENT_VERSION=\|YERAL_VERSION_LABEL=" www/index.html | cut -c1-120
+fi
 # logo.png solo se usa para generar los iconos; no se copia a www (pesa 1.4 MB y la web no lo usa)
 # hls.js en local para no depender del CDN en la TV (si falla, la app usa el CDN como respaldo)
 curl -fsSL --max-time 40 https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.8/hls.min.js -o www/hls.min.js || { rm -f www/hls.min.js; echo "AVISO: no se pudo descargar hls.js; se usará el CDN"; }
@@ -3150,6 +3156,11 @@ REPOS
 
 cd android
 chmod +x gradlew
+# versionCode/versionName reales (Android los usa para saber que la APK nueva es una actualización)
+if [ -n "${BUILD_NUMBER:-}" ]; then
+  sed -i -E "s/versionCode [0-9]+/versionCode ${BUILD_NUMBER}/; s/versionName \"[^\"]*\"/versionName \"1.${BUILD_NUMBER}\"/" app/build.gradle
+  grep -n "versionCode\|versionName" app/build.gradle
+fi
 if ./gradlew --refresh-dependencies assembleDebug --no-daemon 2>&1 | tee /tmp/gradle1.log; then
   echo "Compilación OK (ExoPlayer + VLC + MPV)"
 else
