@@ -882,10 +882,20 @@ if(!out.length)out=cat.slice().sort(function(a,b){return (parseFloat(b.rt)||0)-(
 return out;
 }
 function homeCard(c,row,i){var logo=c.logo||'',meta=[c.year||'',c.group||'',c.type==='series'?'Serie':'Película'].filter(Boolean).join(' · '),progress=c.cw?Math.max(0,Math.min(100,c.cw.pos/c.cw.dur*100)):0;return '<button class="home-card" type="button" data-home-row="'+row+'" data-home-i="'+i+'"><span class="home-poster">'+(logo?'<img src="'+esc(logo)+'" loading="lazy" decoding="async" alt="" onerror="this.style.display=\'none\'">':'▶')+'</span>'+(c.cw?'<span class="home-progress"><i style="width:'+progress.toFixed(1)+'%"></i></span>':'')+'<span class="home-card-name">'+esc(c.name)+'</span><span class="home-card-meta">'+esc(meta)+'</span></button>'}
+function homeSkel(){var o='';for(var i=0;i<8;i++)o+='<div class="home-card home-skel" aria-hidden="true"><span class="home-poster"></span><span class="home-card-name">&nbsp;</span><span class="home-card-meta">&nbsp;</span></div>';return o}
+/* Copia local de las filas del inicio: la pantalla sale al instante y luego se actualiza sola. */
+var HOME_CACHE=null,HOME_CACHE_K='';
+function homeCacheKey(){var q=S.sess;return(q&&q.s&&q.u)?'yeral_home_v1|'+q.s+'|'+q.u:''}
+function homeCacheLoad(){var k=homeCacheKey();if(HOME_CACHE&&HOME_CACHE_K===k)return HOME_CACHE;HOME_CACHE={newest:[],series:[]};HOME_CACHE_K=k;try{if(k){var j=JSON.parse(localStorage.getItem(k)||'null');if(j&&Array.isArray(j.newest)&&Array.isArray(j.series))HOME_CACHE=j}}catch(e){}return HOME_CACHE}
+function homeCacheSave(n,sr){try{var k=homeCacheKey();if(!k||(!n.length&&!sr.length))return;var d={newest:n.slice(0,24),series:sr.slice(0,24),t:Date.now()};localStorage.setItem(k,JSON.stringify(d));HOME_CACHE=d;HOME_CACHE_K=k}catch(e){}}
+function homeMerge(a,b,n){var seen={},out=[];a.concat(b||[]).forEach(function(c){if(!c||!c.name)return;var id=key(c);if(seen[id])return;seen[id]=1;out.push(c)});return out.slice(0,n)}
+function homeRailsData(){var cat=homeCatalog(),newest=cat.filter(function(c){return c.type==='vod'}).slice().sort(function(a,b){return homeAddedTime(b)-homeAddedTime(a)}).slice(0,24),series=cat.filter(function(c){return c.type==='series'}).slice(0,24);
+if(!HOME_BG.done){var hc=homeCacheLoad();newest=homeMerge(newest,hc.newest,60).sort(function(a,b){return homeAddedTime(b)-homeAddedTime(a)}).slice(0,24);series=homeMerge(series,hc.series,24)}
+return{newest:newest,series:series}}
 var HOME_ROWS={};
-function homeSection(title,row,items,empty,action){var a=(items||[]).slice(0,18);HOME_ROWS[row]=a;return '<section class="home-section"><div class="home-sec-head"><h3>'+title+'</h3><span class="sp"></span>'+(action?'<button type="button" data-home-action="'+action+'">Ver todo</button>':'')+'</div><div class="home-rail">'+(a.length?a.map(function(c,i){return homeCard(c,row,i)}).join(''):'<div class="home-empty">'+empty+'</div>')+'</div></section>'}
+function homeSection(title,row,items,empty,action){var a=(items||[]).slice(0,18);HOME_ROWS[row]=a;return '<section class="home-section"><div class="home-sec-head"><h3>'+title+'</h3><span class="sp"></span>'+(action?'<button type="button" data-home-action="'+action+'">Ver todo</button>':'')+'</div><div class="home-rail">'+(a.length?a.map(function(c,i){return homeCard(c,row,i)}).join(''):(HOME_BG.running?homeSkel():'<div class="home-empty">'+empty+'</div>'))+'</div></section>'}
 function homeAddedTime(c){var v=c&&c.added;if(v==null||v==='')return 0;var n=Number(v);if(isFinite(n)&&n>0)return n<1000000000000?n*1000:n;var d=Date.parse(v);return isNaN(d)?0:d}
-function renderHomeRails(){var e=$('hch');if(!e)return;var cat=homeCatalog(),newest=cat.filter(function(c){return c.type==='vod'}).slice().sort(function(a,b){return homeAddedTime(b)-homeAddedTime(a)}).slice(0,24),series=cat.filter(function(c){return c.type==='series'}).slice(0,24);
+function renderHomeRails(){var e=$('hch');if(!e)return;var d=homeRailsData(),newest=d.newest,series=d.series;
 var hero=newest.length?newest[0]:null;HOME_ROWS.hero=hero?[hero]:[];
 var h=hero?'<button class="home-hero" type="button" data-home-row="hero" data-home-i="0"><span class="home-hero-art">'+(hero.logo?'<img src="'+esc(hero.logo)+'" loading="lazy" decoding="async" alt="" onerror="this.style.display=\'none\'">':'')+'</span><span class="home-hero-shade"></span><span class="home-hero-copy"><small>DESTACADO EN YERAL-Pro</small><b>'+esc(hero.name)+'</b><span>Película'+(hero.year?' · '+esc(hero.year):'')+'</span><i>▶ &nbsp; Reproducir</i></span></button>':'';
 h+='<section class="home-section"><div class="featured-head"><h3>'+ic('tv')+' Canales</h3><span class="sp"></span><button type="button" data-home-action="manage-featured">⚙ Gestionar canales</button></div><div class="featured-rail">'+HCH.map(function(x,i){return '<button class="featured-card'+(hchFind(x)?'':' no')+'" type="button" data-hc="'+i+'">'+ic('tv')+'<span>'+esc(x.label||x.name)+'</span></button>'}).join('')+'</div></section>';
@@ -896,16 +906,24 @@ var HOME_BG={token:0,running:false,done:false};
 function homeBgLater(fn,ms){setTimeout(function(){if(typeof requestIdleCallback==='function')requestIdleCallback(fn,{timeout:1800});else fn()},ms||500)}
 function homeBgMap(raw,mode,cat){if(!Array.isArray(raw))raw=(raw&&typeof raw==='object')?Object.keys(raw).map(function(k){return raw[k]}):[];return raw.map(function(x){return mode==='vod'?{name:x.name,group:cat.name,logo:x.stream_icon||'',type:'vod',vid:x.stream_id,rt:x.rating,year:x.year||x.releaseDate||x.releasedate||'',added:x.added||x.last_modified||x.added_at||'',genre:x.genre||'',language:x.language||x.audio||'',url:S.sess.s+'/movie/'+enc(S.sess.u)+'/'+enc(S.sess.p)+'/'+x.stream_id+'.'+(x.container_extension||'mp4')}:{name:x.name,group:cat.name,logo:x.cover||'',type:'series',series_id:x.series_id,year:x.year||x.releaseDate||x.releasedate||'',genre:x.genre||'',language:x.language||x.audio||''}}).filter(function(x){return x.name})}
 function startHomeBackground(){var ss=S.sess;if(!ss||ss.m3u||!ss.s||!ss.u||!ss.p||HOME_BG.running||HOME_BG.done)return;var token=++HOME_BG.token;HOME_BG.running=true;
-async function run(){try{for(var mi=0;mi<2;mi++){var mode=mi===0?'vod':'series',act=mode==='vod'?'get_vod_categories':'get_series_categories';if(token!==HOME_BG.token)return;var cats=CC[mode];if(!Array.isArray(cats)){var rawCats=await api(act);if(!Array.isArray(rawCats))continue;cats=rawCats.map(function(c){return{id:String(c.category_id),name:c.category_name}});CC[mode]=cats}
-for(var i=0;i<cats.length;i++){if(token!==HOME_BG.token)return;var c=cats[i];if(!c||!c.id||c.id==='__all'||hidden(mode,c.name))continue;var k=mode+':'+c.id;if(!SC[k]){try{var raw=await api(mode==='vod'?'get_vod_streams':'get_series','&category_id='+enc(c.id));SC[k]=homeBgMap(raw,mode,c)}catch(err){/* Un fallo en una carpeta no detiene el resto */}}
-if(i%2===1&&$('home')&&!$('home').classList.contains('hide'))renderHomeRails();
-await new Promise(function(resolve){homeBgLater(resolve,420)});
-}
-}if(token===HOME_BG.token){HOME_BG.done=true;if($('home')&&!$('home').classList.contains('hide'))renderHomeRails()}}
+function showNow(){if($('home')&&!$('home').classList.contains('hide'))renderHomeRails()}
+/* Carpetas nuevas/estrenos primero; se piden varias a la vez y sin pausas largas. */
+var PRIO=/estreno|nuevo|reciente|novedad|2026|2025/i;
+async function loadMode(mode){var act=mode==='vod'?'get_vod_categories':'get_series_categories',cats=CC[mode];
+if(!Array.isArray(cats)){var rawCats=await api(act);if(!Array.isArray(rawCats))return;cats=rawCats.map(function(c){return{id:String(c.category_id),name:c.category_name}});CC[mode]=cats}
+var list=cats.filter(function(c){return c&&c.id&&c.id!=='__all'&&!hidden(mode,c.name)}).sort(function(a,b){return (PRIO.test(b.name)?1:0)-(PRIO.test(a.name)?1:0)});
+var idx=0,n=0;
+async function worker(){while(idx<list.length){if(token!==HOME_BG.token)return;var c=list[idx++],k=mode+':'+c.id;
+if(!SC[k]){try{var raw=await api(mode==='vod'?'get_vod_streams':'get_series','&category_id='+enc(c.id));SC[k]=homeBgMap(raw,mode,c)}catch(err){/* Un fallo en una carpeta no detiene el resto */}}
+n++;if(n===1||n%4===0)showNow();
+await new Promise(function(r){setTimeout(r,40)})}}
+await Promise.all([worker(),worker()])}
+async function run(){try{await Promise.all([loadMode('vod').catch(function(){}),loadMode('series').catch(function(){})]);
+if(token===HOME_BG.token){HOME_BG.done=true;try{var d=homeRailsData();homeCacheSave(d.newest,d.series)}catch(e){}showNow()}}
 catch(err){/* La pantalla principal permanece utilizable aunque falle la precarga */}
-finally{if(token===HOME_BG.token)HOME_BG.running=false}}
-homeBgLater(run,900)}
-function renderHome(){try{renderResume()}catch(x){}$('c_live').textContent=S.chs.length+' items';$('c_vod').textContent=CC.vod?CC.vod.length+' carpetas':'Explorar';$('c_ser').textContent=CC.series?CC.series.length+' carpetas':'Explorar';$('c_fav').textContent=S.fav.length+' items';$('c_pl').textContent=S.sess&&S.sess.m3u?'Lista M3U':'Cambiar lista';renderHomeRails();startHomeBackground()}
+finally{if(token===HOME_BG.token){HOME_BG.running=false;showNow()}}}
+setTimeout(run,120)}
+function renderHome(){try{renderResume()}catch(x){}$('c_live').textContent=S.chs.length+' items';$('c_vod').textContent=CC.vod?CC.vod.length+' carpetas':'Explorar';$('c_ser').textContent=CC.series?CC.series.length+' carpetas':'Explorar';$('c_fav').textContent=S.fav.length+' items';$('c_pl').textContent=S.sess&&S.sess.m3u?'Lista M3U':'Cambiar lista';startHomeBackground();renderHomeRails()}
 function go(v){$('home').classList.toggle('hide',v!='home');$('br').classList.toggle('hide',v!='br')}
 [['hOut','back'],['hRef','refresh'],['hSet','gear'],['bBack','back'],['bFav','heart'],['bSea','search'],['bEdit','pencil'],['bSet','gear'],['stB','back'],['pvBk','back'],['pvRw','rw'],['pvFw','ff'],['pvI','info'],['pvA','music'],['pvS','cc'],['pvR','aspect'],['pvP','pip'],['pvF','full'],['pvO','gear']].forEach(function(p){$(p[0]).innerHTML=ic(p[1])});
 $('hRep').innerHTML=ic('replay')+' Replay';
@@ -1982,6 +2000,16 @@ body{background:radial-gradient(1100px 520px at 85% -12%,rgba(47,140,255,.22),tr
 .yu-check-status{font-size:14px;color:#e0e8ff;margin-top:15px;line-height:1.45}
 </style>
 <div id="yeralUpdateBox" role="dialog" aria-modal="true" aria-labelledby="yeralUpdateTitle"><div id="yeralUpdateCard"><h2 id="yeralUpdateTitle">YERAL-Pro · Actualización</h2><p id="yeralUpdateMsg"></p><div class="yu-actions"><a id="yeralUpdateDownload" class="yu-download" href="#" target="_blank" rel="noopener">Descargar APK</a><button type="button" id="yeralUpdateLater" class="yu-later">Más tarde</button></div></div></div>
+<style id="yeral-grid-fix">
+/* Películas/Series: las filas de la cuadrícula se comprimían (tarjetas vacías). Cada fila ahora mide lo que mide su tarjeta. */
+#ls.grid{grid-auto-rows:max-content!important;align-content:start!important}
+.home-skel{pointer-events:none}
+.home-skel .home-poster,.home-skel .home-card-name,.home-skel .home-card-meta{background:linear-gradient(90deg,#ffffff0a,#ffffff1f,#ffffff0a);background-size:200% 100%;animation:yskel 1.2s linear infinite;color:transparent;border-radius:6px}
+@keyframes yskel{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){.home-skel *{animation:none}}
+
+#ls.grid .ch{min-height:max-content!important;align-self:start!important}
+</style>
 <script id="yeral-updater">
 (function(){
   // Mantener estos valores sincronizados con la versión/build reales que se publican.
