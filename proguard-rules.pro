@@ -6,8 +6,8 @@
     @com.getcapacitor.PluginMethod public *;
 }
 
-# --- GLYSTV ---
--keep class com.glystv.app.** { *; }
+# --- YERAL ---
+-keep class com.yeral.app.** { *; }
 
 # --- Media3 / ExoPlayer ---
 -keep class androidx.media3.** { *; }
@@ -31,4 +31,4 @@
 -dontwarn org.videolan.**
 -keep class dev.jdtech.mpv.** { *; }
 -dontwarn dev.jdtech.mpv.**
--keep class com.glystv.app.AltPlayerActivity { *; }
+-keep class com.yeral.app.AltPlayerActivity { *; }

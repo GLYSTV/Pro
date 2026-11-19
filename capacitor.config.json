@@ -1,6 +1,6 @@
 {
-  "appId": "com.glystv.app",
-  "appName": "GLYSTV PRO",
+  "appId": "com.yeral.app",
+  "appName": "YERAL-Pro",
   "webDir": "www",
   "server": { "androidScheme": "https", "cleartext": true },
   "android": { "allowMixedContent": true },
