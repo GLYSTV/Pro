@@ -1200,7 +1200,7 @@ $('poX').onclick=function(){$('po').classList.add('hide')};
 /* ---------- Configuración ---------- */
 var EN={'Control parental':'Parental Control','Ajustes de canales en vivo':'Live Channel Settings','Ajustes generales':'General Settings','Cambiar idioma':'Change Language','Ajustes del reproductor':'Built-in Player Settings','Subtítulos':'Subtitle Settings','Reproductores externos':'External players','Formato de hora':'Time Format','Automático':'Automatic','Ocultar categorías TV':'Hide Live Categories','Ocultar categorías Películas':'Hide Vod Categories','Ocultar categorías Series':'Hide Series Categories','Borrar historial canales':'Clear History Channels','Borrar historial películas':'Clear History Movies','Borrar historial series':'Clear History Series','Actualizar ahora':'Update Now','Configuración':'Settings','Cerrar':'Close','TV en vivo':'Live TV','Películas':'Movies','Favoritos':'Favorites','Listas':'Playlists','Buscar…':'Search…','Listo':'Done'};
 function L(t){return X.lang=='en'&&EN[t]||t}
-var T=[['eyeoff','Ocultar categorías TV','hl'],['eyeoff','Ocultar categorías Películas','hv'],['eyeoff','Ocultar categorías Series','hs'],['tv','Ajustes de canales en vivo','liv'],['lock','Control parental','par'],['gear','Ajustes generales','gen'],['globe','Cambiar idioma','lng'],['play','Ajustes del reproductor','ply'],['cc','Subtítulos','ply'],['ext','Reproductores externos','ext'],['clock','Formato de hora','tfm'],['refresh','Automático','aut'],['trash','Borrar historial canales','cc'],['trash','Borrar historial películas','cm'],['trash','Borrar historial series','cs'],['down','Actualizar ahora','upd']];
+var T=[['eyeoff','Ocultar categorías TV','hl'],['eyeoff','Ocultar categorías Películas','hv'],['eyeoff','Ocultar categorías Series','hs'],['tv','Ajustes de canales en vivo','liv'],['lock','Control parental','par'],['gear','Ajustes generales','gen'],['globe','Cambiar idioma','lng'],['play','Ajustes del reproductor','ply'],['cc','Subtítulos','ply'],['ext','Reproductores externos','ext'],['clock','Formato de hora','tfm'],['refresh','Automático','aut'],['trash','Borrar historial canales','cc'],['trash','Borrar historial películas','cm'],['trash','Borrar historial series','cs'],['refresh','Buscar actualización','upd']];
 function buildSG(){$('sg').innerHTML=T.map(function(t){return '<button class="st" data-k="'+t[2]+'">'+ic(t[0])+'<span>'+L(t[1])+'</span></button>'}).join('')}buildSG();
 function stView(g){$('sg').classList.toggle('hide',!g);$('sgen').classList.toggle('hide',g)}
 function openSet(){stView(true);$('natO').checked=ld('pro_native',1)!==0;$('st').classList.remove('hide')}
@@ -1219,7 +1219,7 @@ else if(k=='hl')openHide('live');else if(k=='hv')openHide('vod');else if(k=='hs'
 else if(k=='cc')clr(function(c){return c.type=='live'},'el historial de canales');
 else if(k=='cm')clr(function(c){return c.type=='vod'},'el historial de películas');
 else if(k=='cs')clr(function(c){return c.type=='series'},'el historial de series');
-else if(k=='upd'){$('st').classList.add('hide');reload()}};
+else if(k=='upd'){$('st').classList.add('hide');yeralCheckUpdate(true)}};
 
 /* ---------- Opciones extra (idioma, hora, automático, externos, canales) ---------- */
 var XR={
@@ -1957,6 +1957,53 @@ body{background:radial-gradient(1100px 520px at 85% -12%,rgba(47,140,255,.22),tr
 }
 @media(prefers-reduced-motion:reduce){.tile,.home-card,.ch,.ib{transition:none}}
 </style>
+
+
+<!-- YERAL-Pro: updater UI -->
+<style id="yeral-updater-style">
+#yeralUpdateBox{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.78);padding:20px}
+#yeralUpdateBox.show{display:flex}
+#yeralUpdateCard{width:min(100%,440px);background:linear-gradient(145deg,#1c1230,#09070d);border:1px solid #8a50ff55;border-radius:22px;padding:24px;color:#f4ecff;box-shadow:0 20px 70px #000a,0 0 30px #772dff22}
+#yeralUpdateCard h2{margin:0 0 10px;font-size:22px}#yeralUpdateCard p{line-height:1.5;color:#cfc1e6}
+#yeralUpdateCard .yu-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+#yeralUpdateCard .yu-actions button,#yeralUpdateCard .yu-actions a{flex:1;text-align:center;border:0;border-radius:12px;padding:12px 14px;font-weight:800;text-decoration:none;cursor:pointer}
+#yeralUpdateCard .yu-download{background:linear-gradient(90deg,#7028f5,#a34cff);color:white}
+#yeralUpdateCard .yu-later{background:#ffffff12;color:#eee;border:1px solid #ffffff20!important}
+</style>
+<div id="yeralUpdateBox" role="dialog" aria-modal="true" aria-labelledby="yeralUpdateTitle"><div id="yeralUpdateCard"><h2 id="yeralUpdateTitle">YERAL-Pro · Actualización</h2><p id="yeralUpdateMsg"></p><div class="yu-actions"><a id="yeralUpdateDownload" class="yu-download" href="#" target="_blank" rel="noopener">Descargar APK</a><button type="button" id="yeralUpdateLater" class="yu-later">Más tarde</button></div></div></div>
+<script id="yeral-updater">
+(function(){
+  var YERAL_CURRENT_VERSION=136;
+  var YERAL_RELEASE_API='https://api.github.com/repos/GLYSTV/yeral-Pro/releases/latest';
+  var yeralUpdateShown=false;
+  function closeUpdate(){var box=document.getElementById('yeralUpdateBox');if(box)box.classList.remove('show')}
+  function showUpdate(release,asset,force){
+    if(yeralUpdateShown&&!force)return;yeralUpdateShown=true;
+    var title=release.name||release.tag_name||'Nueva versión';
+    var msg='Hay una nueva versión de YERAL-Pro ('+title+'). Descarga la APK para actualizar. Android te mostrará el instalador.';
+    var box=document.getElementById('yeralUpdateBox');var p=document.getElementById('yeralUpdateMsg');var a=document.getElementById('yeralUpdateDownload');
+    if(!box||!p||!a)return;
+    p.textContent=msg;a.href=asset.browser_download_url;a.setAttribute('download','YERAL-Pro.apk');box.classList.add('show');
+  }
+  async function yeralCheckUpdate(force){
+    try{
+      var response=await fetch(YERAL_RELEASE_API,{headers:{'Accept':'application/vnd.github+json'},cache:'no-store'});
+      if(!response.ok)throw new Error('GitHub HTTP '+response.status);
+      var release=await response.json();
+      if(release.draft||release.prerelease)return;
+      var tag=String(release.tag_name||release.name||'');var nums=(tag.match(/\d+/g)||[]).join('');var remote=nums?parseInt(nums,10):NaN;
+      var assets=Array.isArray(release.assets)?release.assets:[];var apk=assets.find(function(x){return /\.apk$/i.test(x.name||'')});
+      if(!apk){if(force){alert('La última Release no tiene un archivo APK adjunto.');}return;}
+      if(force){showUpdate(release,apk,true);return;}
+      if(Number.isFinite(remote)&&remote>YERAL_CURRENT_VERSION)showUpdate(release,apk,false);
+    }catch(e){if(force)alert('No se pudo consultar la actualización. Comprueba tu conexión e inténtalo de nuevo.');console.warn('[YERAL update check]',e)}
+  }
+  window.yeralCheckUpdate=yeralCheckUpdate;
+  var later=document.getElementById('yeralUpdateLater');if(later)later.addEventListener('click',closeUpdate);
+  var box=document.getElementById('yeralUpdateBox');if(box)box.addEventListener('click',function(e){if(e.target===box)closeUpdate()});
+  window.addEventListener('load',function(){setTimeout(function(){yeralCheckUpdate(false)},3500)});
+})();
+</script>
 
 </body>
 </html>
