@@ -3156,6 +3156,24 @@ REPOS
 
 cd android
 chmod +x gradlew
+# Firma fija: la misma clave en todas las versiones (así Android permite actualizar encima).
+if [ -n "${YERAL_KEYSTORE:-}" ] && [ -f "$YERAL_KEYSTORE" ]; then
+cat >> app/build.gradle <<'SIGN'
+
+// YERAL: firma fija (misma clave en todas las versiones)
+android {
+    signingConfigs {
+        debug {
+            storeFile file(System.getenv('YERAL_KEYSTORE'))
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+}
+SIGN
+echo "Firma fija configurada en app/build.gradle"
+fi
 # versionCode/versionName reales (Android los usa para saber que la APK nueva es una actualización)
 if [ -n "${BUILD_NUMBER:-}" ]; then
   sed -i -E "s/versionCode [0-9]+/versionCode ${BUILD_NUMBER}/; s/versionName \"[^\"]*\"/versionName \"1.${BUILD_NUMBER}\"/" app/build.gradle
