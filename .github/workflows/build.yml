@@ -50,7 +50,21 @@ jobs:
       - name: Instalar dependencias
         run: npm install
 
+      - name: Restaurar firma fija de la APK
+        env:
+          KS_B64: ${{ secrets.YERAL_KEYSTORE_B64 }}
+        run: |
+          mkdir -p ~/.android
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > ~/.android/debug.keystore
+            echo "Firma fija restaurada."
+          else
+            echo "::warning::Falta el secreto YERAL_KEYSTORE_B64: cada compilación se firmará con una clave distinta y Android no permitirá actualizar encima."
+          fi
+
       - name: Compilar YERAL-PRO
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
         run: bash build-yeral.sh
 
       - name: Renombrar APK
@@ -81,6 +95,7 @@ jobs:
           name: YERAL-PRO ${{ github.run_number }}
           files: YERAL-PRO.apk
           make_latest: true
+
 
 
           
