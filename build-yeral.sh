@@ -35,7 +35,7 @@ fi
 # 2) Proyecto Android
 npx cap add android
 
-unzip -oq yeral-res.zip -d android/app/src/main/res
+[ -f yeral-res.zip ] && unzip -oq yeral-res.zip -d android/app/src/main/res || echo "AVISO: no hay yeral-res.zip; los iconos se generan desde icono.png"
 PKG=android/app/src/main/java/com/yeral/app
 MAN=android/app/src/main/AndroidManifest.xml
 
