@@ -3136,9 +3136,21 @@ SDKPY
 
 grep -n -E "coreLibraryDesugaring|desugar_jdk" android/app/build.gradle || { echo "ERROR: no se pudo activar desugaring"; exit 1; }
 
+# Repositorios explícitos para resolver dependencias Android desde Google Maven y Maven Central.
+# Protobuf 3.25.5 sí existe; no cambiar su versión: asegurar que Gradle consulte Maven Central.
+python3 - <<'REPOS'
+p = 'android/app/build.gradle'
+s = open(p, encoding='utf-8').read()
+block = "\n// YERAL: repositorios explícitos para dependencias transitivas (incluido Protobuf)\nrepositories {\n    google()\n    mavenCentral()\n}\n"
+if 'YERAL: repositorios explícitos' not in s:
+    s += block
+open(p, 'w', encoding='utf-8').write(s)
+print('Repositorios Google + Maven Central configurados en app/build.gradle')
+REPOS
+
 cd android
 chmod +x gradlew
-if ./gradlew assembleDebug --no-daemon 2>&1 | tee /tmp/gradle1.log; then
+if ./gradlew --refresh-dependencies assembleDebug --no-daemon 2>&1 | tee /tmp/gradle1.log; then
   echo "Compilación OK (ExoPlayer + VLC + MPV)"
 else
   echo "ERROR: la compilación falló. No se genera APK sin VLC/MPV."
